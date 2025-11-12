@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+// --- Resume Models ---
+// This is the main model for a user's resume.
+// It is directly linked to a Clerk userId.
+model Resume {
+  id        String @id @default(cuid())
+  userId    String @unique // Links to Clerk's user ID
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Personal Info
+  fullName String?
+  email    String?
+  phone    String?
+  location String?
+  website  String?
+
+  // Summary
+  summary String? @db.Text // Use @db.Text for longer strings
+
+  // Skills
+  // An array of strings is perfect for the MVP
+  skills String[]
+
+  // --- Relations ---
+  // A resume can have multiple work experiences and education entries
+  experience WorkExperience[]
+  education  Education[]
+}
+
+// Model for Work Experience entries
+model WorkExperience {
+  id          String   @id @default(cuid())
+  resumeId    String   // Foreign key to link to the Resume
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  jobTitle    String
+  company     String
+  location    String?
+  startDate   DateTime
+  endDate     DateTime? // Optional, for current jobs
+  description String?   @db.Text
+}
+
+// Model for Education entries
+model Education {
+  id          String   @id @default(cuid())
+  resumeId    String   // Foreign key to link to the Resume
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  school      String
+  degree      String
+  fieldOfStudy String?
+  startDate   DateTime
+  endDate     DateTime? // Optional, for current studies
+  description String?   @db.Text
+}
+
+
+// --- Career Bot Models ---
+// This model stores individual chat messages for the AI Career Bot
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String   // Links to Clerk's user ID
+  createdAt DateTime @default(now())
+
+  // Role can be "user" or "model" (for the AI)
+  role    String
+  content String @db.Text
+
+  // Add an index to quickly query messages by user
+  @@index([userId])
+}
