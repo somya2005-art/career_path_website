@@ -1,24 +1,20 @@
 // Based on our Prisma Schema, but with client-side types
 // We'll use this for our React Context state
+import {
+  WorkExperience,
+  Education,
+  Project,
+  Certification,
+  VolunteerWork,
+} from "@prisma/client";
 
-export type WorkExperience = {
-  id: string;
-  jobTitle: string;
-  company: string;
-  location?: string | null;
-  startDate?: Date | null;
-  endDate?: Date | null;
-  description?: string | null;
-};
-
-export type Education = {
-  id: string;
-  school: string;
-  degree: string;
-  fieldOfStudy?: string | null;
-  startDate?: Date | null;
-  endDate?: Date | null;
-  description?: string | null;
+// Export these types directly from Prisma
+export type {
+  WorkExperience,
+  Education,
+  Project,
+  Certification,
+  VolunteerWork,
 };
 
 // This is the main state for our Resume Context
@@ -30,12 +26,14 @@ export type ResumeState = {
   website: string;
   summary: string;
   skills: string[];
-  experience: WorkExperience[];
+  workExperience: WorkExperience[];
   education: Education[];
+  projects: Project[];
+  certifications: Certification[];
+  volunteerWork: VolunteerWork[];
 };
 
 // This defines the actions we can dispatch to our reducer
-// e.g., dispatch({ type: 'UPDATE_PERSONAL_INFO', payload: { ... } })
 export type ResumeAction =
   | { type: "SET_RESUME"; payload: ResumeState }
   | {
@@ -44,12 +42,38 @@ export type ResumeAction =
     }
   | { type: "UPDATE_SUMMARY"; payload: string }
   | { type: "SET_SKILLS"; payload: string[] }
-  | { type: "ADD_EXPERIENCE"; payload: WorkExperience }
+  // Work Experience
+  | { type: "ADD_WORK_EXPERIENCE"; payload: WorkExperience }
   | {
-      type: "UPDATE_EXPERIENCE";
+      type: "UPDATE_WORK_EXPERIENCE";
       payload: { index: number; data: WorkExperience };
     }
-  | { type: "REMOVE_EXPERIENCE"; payload: { index: number } }
+  | { type: "REMOVE_WORK_EXPERIENCE"; payload: { index: number } }
+  // Education
   | { type: "ADD_EDUCATION"; payload: Education }
-  | { type: "UPDATE_EDUCATION"; payload: { index: number; data: Education } }
-  | { type: "REMOVE_EDUCATION"; payload: { index: number } };
+  | {
+      type: "UPDATE_EDUCATION";
+      payload: { index: number; data: Education };
+    }
+  | { type: "REMOVE_EDUCATION"; payload: { index: number } }
+  // Project
+  | { type: "ADD_PROJECT"; payload: Project }
+  | {
+      type: "UPDATE_PROJECT";
+      payload: { index: number; data: Project };
+    }
+  | { type: "REMOVE_PROJECT"; payload: { index: number } }
+  // Certification
+  | { type: "ADD_CERTIFICATION"; payload: Certification }
+  | {
+      type: "UPDATE_CERTIFICATION";
+      payload: { index: number; data: Certification };
+    }
+  | { type: "REMOVE_CERTIFICATION"; payload: { index: number } }
+  // Volunteer Work
+  | { type: "ADD_VOLUNTEER_WORK"; payload: VolunteerWork }
+  | {
+      type: "UPDATE_VOLUNTEER_WORK";
+      payload: { index: number; data: VolunteerWork };
+    }
+  | { type: "REMOVE_VOLUNTEER_WORK"; payload: { index: number } };

@@ -1,109 +1,147 @@
 "use client";
 
+// This is the main form component that holds the accordion
+
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { useResumeContext } from "./ResumeContextProvider";
 import { saveResumeData } from "../actions";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-// We will create these components in the next steps
-// import { PersonalInfoForm } from "./form-sections/PersonalInfoForm";
-// import { SummaryForm } from "./form-sections/SummaryForm";
-// import { ExperienceForm } from "./form-sections/ExperienceForm";
-// import { EducationForm } from "./form-sections/EducationForm";
-// import { SkillsForm } from "./form-sections/SkillsForm";
+import { PersonalInfoForm } from "./form-sections/PersonalInfoForm";
+import { SummaryForm } from "./form-sections/SummaryForm";
+import { ExperienceForm } from "./form-sections/ExperienceForm";
+import { EducationForm } from "./form-sections/EducationForm";
+import { SkillsForm } from "./form-sections/SkillsForm";
+import { ProjectForm } from "./form-sections/ProjectForm";
+import { CertificationForm } from "./form-sections/CertificationForm";
+import { VolunteerWorkForm } from "./form-sections/VolunteerWorkForm";
 
 export function ResumeForm() {
   const { state } = useResumeContext();
   const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"success" | "error" | null>(
+    null
+  );
 
-  // Handle saving the resume
+  // Handle saving the entire resume state to the database
   const handleSave = async () => {
     setIsSaving(true);
+    setSaveStatus(null);
     try {
       const result = await saveResumeData(state);
       if (result.success) {
-        // We can add a toast notification here later
-        console.log("Resume saved successfully!");
+        setSaveStatus("success");
       } else {
-        console.error("Failed to save resume:", result.error);
+        setSaveStatus("error");
       }
     } catch (error) {
-      console.error("An error occurred:", error);
+      setSaveStatus("error");
+    } finally {
+      setIsSaving(false);
+      // Hide status message after 3 seconds
+      setTimeout(() => setSaveStatus(null), 3000);
     }
-    setIsSaving(false);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-end gap-4">
-        <Button variant="outline">Import</Button>
+    <div className="w-full h-full p-6 overflow-y-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Resume Editor</h2>
         <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            "Save"
-          )}
+          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          {isSaving ? "Saving..." : "Save"}
         </Button>
       </div>
+      {saveStatus === "success" && (
+        <div className="text-green-600 mb-4">Saved successfully!</div>
+      )}
+      {saveStatus === "error" && (
+        <div className="text-red-600 mb-4">
+          Failed to save. Please try again.
+        </div>
+      )}
 
-      <Accordion
-        type="multiple"
-        defaultValue={["personal-info"]}
-        className="w-full"
-      >
+      {/* The main accordion for all resume sections */}
+      <Accordion type="multiple" defaultValue={["personal-info"]}>
+        {/* Personal Info */}
         <AccordionItem value="personal-info">
-          <AccordionTrigger>Personal Information</AccordionTrigger>
+          <AccordionTrigger suppressHydrationWarning>
+            Personal Information
+          </AccordionTrigger>
           <AccordionContent>
-            {/* <PersonalInfoForm /> */}
-            <p className="p-4 text-muted-foreground">
-              Form section coming soon...
-            </p>
+            <PersonalInfoForm />
           </AccordionContent>
         </AccordionItem>
 
+        {/* Professional Summary */}
         <AccordionItem value="summary">
-          <AccordionTrigger>Professional Summary</AccordionTrigger>
+          <AccordionTrigger suppressHydrationWarning>
+            Professional Summary
+          </AccordionTrigger>
           <AccordionContent>
-            {/* <SummaryForm /> */}
-            <p className="p-4 text-muted-foreground">
-              Form section coming soon...
-            </p>
+            <SummaryForm />
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="experience">
-          <AccordionTrigger>Work Experience</AccordionTrigger>
-          <AccordionContent>
-            {/* <ExperienceForm /> */}
-            <p className="p-4 text-muted-foreground">
-              Form section coming soon...
-            </p>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="education">
-          <AccordionTrigger>Education</AccordionTrigger>
-          <AccordionContent>
-            {/* <EducationForm /> */}
-            <p className="p-4 text-muted-foreground">
-              Form section coming soon...
-            </p>
-          </AccordionContent>
-        </AccordionItem>
-
+        {/* Skills */}
         <AccordionItem value="skills">
-          <AccordionTrigger>Skills</AccordionTrigger>
+          <AccordionTrigger suppressHydrationWarning>Skills</AccordionTrigger>
           <AccordionContent>
-            {/* <SkillsForm /> */}
-            <p className="p-4 text-muted-foreground">
-              Form section coming soon...
-            </p>
+            <SkillsForm />
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Work Experience */}
+        <AccordionItem value="experience">
+          <AccordionTrigger suppressHydrationWarning>
+            Work Experience
+          </AccordionTrigger>
+          <AccordionContent>
+            <ExperienceForm />
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Projects */}
+        <AccordionItem value="projects">
+          <AccordionTrigger suppressHydrationWarning>Projects</AccordionTrigger>
+          <AccordionContent>
+            <ProjectForm />
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Education */}
+        <AccordionItem value="education">
+          <AccordionTrigger suppressHydrationWarning>
+            Education
+          </AccordionTrigger>
+          <AccordionContent>
+            <EducationForm />
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Certifications */}
+        <AccordionItem value="certifications">
+          <AccordionTrigger suppressHydrationWarning>
+            Certifications
+          </AccordionTrigger>
+          <AccordionContent>
+            <CertificationForm />
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Volunteer Work */}
+        <AccordionItem value="volunteer">
+          <AccordionTrigger suppressHydrationWarning>
+            Volunteer Work
+          </AccordionTrigger>
+          <AccordionContent>
+            <VolunteerWorkForm />
           </AccordionContent>
         </AccordionItem>
       </Accordion>

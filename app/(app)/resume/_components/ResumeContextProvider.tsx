@@ -1,20 +1,56 @@
 "use client";
 
-import { createContext, useContext, useReducer, ReactNode } from "react";
-import { ResumeState, ResumeAction } from "@/lib/types";
+// This file is the "brain" of our resume builder.
+// It holds the resume state and all the logic for updating it.
 
-// --- 1. Define the Reducer ---
+import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import {
+  ResumeState,
+  ResumeAction,
+  WorkExperience,
+  Education,
+  Project,
+  Certification,
+  VolunteerWork,
+} from "@/lib/types";
+import cuid from "cuid";
+
+// This is the default, empty state for a new resume
+const initialResumeState: ResumeState = {
+  fullName: "",
+  email: "",
+  phone: "",
+  location: "",
+  website: "",
+  summary: "",
+  skills: [],
+  workExperience: [],
+  education: [],
+  projects: [],
+  certifications: [],
+  volunteerWork: [],
+};
+
+// --- The Reducer ---
 // This function handles all state updates
 function resumeReducer(state: ResumeState, action: ResumeAction): ResumeState {
   switch (action.type) {
     case "SET_RESUME":
-      return action.payload;
+      // When loading, make sure we don't have nulls where arrays are expected
+      return {
+        ...initialResumeState, // Start with defaults
+        ...action.payload, // Override with loaded data
+        // Ensure arrays are arrays, not null
+        skills: action.payload.skills || [],
+        workExperience: action.payload.workExperience || [],
+        education: action.payload.education || [],
+        projects: action.payload.projects || [],
+        certifications: action.payload.certifications || [],
+        volunteerWork: action.payload.volunteerWork || [],
+      };
 
     case "UPDATE_PERSONAL_INFO":
-      return {
-        ...state,
-        [action.payload.field]: action.payload.value,
-      };
+      return { ...state, [action.payload.field]: action.payload.value };
 
     case "UPDATE_SUMMARY":
       return { ...state, summary: action.payload };
@@ -22,36 +58,103 @@ function resumeReducer(state: ResumeState, action: ResumeAction): ResumeState {
     case "SET_SKILLS":
       return { ...state, skills: action.payload };
 
-    // --- Experience Reducers ---
-    case "ADD_EXPERIENCE":
-      return { ...state, experience: [...state.experience, action.payload] };
-
-    case "UPDATE_EXPERIENCE":
-      const newExperience = [...state.experience];
-      newExperience[action.payload.index] = action.payload.data;
-      return { ...state, experience: newExperience };
-
-    case "REMOVE_EXPERIENCE":
+    // --- Work Experience ---
+    case "ADD_WORK_EXPERIENCE":
       return {
         ...state,
-        experience: state.experience.filter(
-          (_, i) => i !== action.payload.index
+        workExperience: [...state.workExperience, action.payload],
+      };
+    case "UPDATE_WORK_EXPERIENCE":
+      return {
+        ...state,
+        workExperience: state.workExperience.map((item, index) =>
+          index === action.payload.index ? action.payload.data : item
+        ),
+      };
+    case "REMOVE_WORK_EXPERIENCE":
+      return {
+        ...state,
+        workExperience: state.workExperience.filter(
+          (_, index) => index !== action.payload.index
         ),
       };
 
-    // --- Education Reducers ---
+    // --- Education ---
     case "ADD_EDUCATION":
       return { ...state, education: [...state.education, action.payload] };
-
     case "UPDATE_EDUCATION":
-      const newEducation = [...state.education];
-      newEducation[action.payload.index] = action.payload.data;
-      return { ...state, education: newEducation };
-
+      return {
+        ...state,
+        education: state.education.map((item, index) =>
+          index === action.payload.index ? action.payload.data : item
+        ),
+      };
     case "REMOVE_EDUCATION":
       return {
         ...state,
-        education: state.education.filter((_, i) => i !== action.payload.index),
+        education: state.education.filter(
+          (_, index) => index !== action.payload.index
+        ),
+      };
+
+    // --- Projects ---
+    case "ADD_PROJECT":
+      return { ...state, projects: [...state.projects, action.payload] };
+    case "UPDATE_PROJECT":
+      return {
+        ...state,
+        projects: state.projects.map((item, index) =>
+          index === action.payload.index ? action.payload.data : item
+        ),
+      };
+    case "REMOVE_PROJECT":
+      return {
+        ...state,
+        projects: state.projects.filter(
+          (_, index) => index !== action.payload.index
+        ),
+      };
+
+    // --- Certifications ---
+    case "ADD_CERTIFICATION":
+      return {
+        ...state,
+        certifications: [...state.certifications, action.payload],
+      };
+    case "UPDATE_CERTIFICATION":
+      return {
+        ...state,
+        certifications: state.certifications.map((item, index) =>
+          index === action.payload.index ? action.payload.data : item
+        ),
+      };
+    case "REMOVE_CERTIFICATION":
+      return {
+        ...state,
+        certifications: state.certifications.filter(
+          (_, index) => index !== action.payload.index
+        ),
+      };
+
+    // --- Volunteer Work ---
+    case "ADD_VOLUNTEER_WORK":
+      return {
+        ...state,
+        volunteerWork: [...state.volunteerWork, action.payload],
+      };
+    case "UPDATE_VOLUNTEER_WORK":
+      return {
+        ...state,
+        volunteerWork: state.volunteerWork.map((item, index) =>
+          index === action.payload.index ? action.payload.data : item
+        ),
+      };
+    case "REMOVE_VOLUNTEER_WORK":
+      return {
+        ...state,
+        volunteerWork: state.volunteerWork.filter(
+          (_, index) => index !== action.payload.index
+        ),
       };
 
     default:
@@ -59,26 +162,87 @@ function resumeReducer(state: ResumeState, action: ResumeAction): ResumeState {
   }
 }
 
-// --- 2. Define the Context ---
+// --- Blank Item Creators ---
+// These are used by the forms to add new, empty items to the list
+// We use CUID to create a unique temporary ID for React's `key` prop
+
+// --- THIS IS THE FIX for the uneditable fields bug ---
+// All values are now "" (empty string) instead of placeholder text
+export const createBlankWorkExperience = (): WorkExperience => ({
+  id: cuid(),
+  resumeId: "", // Will be set on save
+  jobTitle: "",
+  company: "",
+  location: "",
+  startDate: null,
+  endDate: null,
+  description: "",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+
+export const createBlankEducation = (): Education => ({
+  id: cuid(),
+  resumeId: "",
+  school: "",
+  degree: "",
+  fieldOfStudy: "",
+  startDate: null,
+  endDate: null,
+  description: "",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+
+export const createBlankProject = (): Project => ({
+  id: cuid(),
+  resumeId: "",
+  name: "",
+  description: "",
+  url: "",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+
+export const createBlankCertification = (): Certification => ({
+  id: cuid(),
+  resumeId: "",
+  name: "",
+  issuer: "",
+  date: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+
+export const createBlankVolunteerWork = (): VolunteerWork => ({
+  id: cuid(),
+  resumeId: "",
+  organization: "",
+  role: "",
+  startDate: null,
+  endDate: null,
+  description: "",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+// --- END OF FIX ---
+
+// --- React Context Setup ---
 type ResumeContextType = {
   state: ResumeState;
   dispatch: React.Dispatch<ResumeAction>;
 };
 
-// Create the context with a default undefined value
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
-// --- 3. Define the Provider Component ---
-type ResumeProviderProps = {
-  children: ReactNode;
-  initialData: ResumeState; // Data fetched from the server
-};
-
+// The Provider component that wraps our page
 export function ResumeContextProvider({
   children,
   initialData,
-}: ResumeProviderProps) {
-  // Initialize the reducer with the server-fetched data
+}: {
+  children: ReactNode;
+  initialData: ResumeState;
+}) {
   const [state, dispatch] = useReducer(resumeReducer, initialData);
 
   return (
@@ -88,11 +252,10 @@ export function ResumeContextProvider({
   );
 }
 
-// --- 4. Create a Custom Hook ---
-// This hook makes it easy for components to access the context
+// The custom hook we use in components to access the state
 export function useResumeContext() {
   const context = useContext(ResumeContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error(
       "useResumeContext must be used within a ResumeContextProvider"
     );

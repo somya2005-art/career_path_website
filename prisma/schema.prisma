@@ -1,86 +1,143 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  relationMode = "prisma"
-}
-
-// --- Resume Models ---
-// This is the main model for a user's resume.
-// It is directly linked to a Clerk userId.
-model Resume {
-  id        String @id @default(cuid())
-  userId    String @unique // Links to Clerk's user ID
+// Clerk Auth User Model
+model User {
+  id        String   @id @unique
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  imageUrl  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // Personal Info
-  fullName String?
-  email    String?
-  phone    String?
-  location String?
-  website  String?
-
-  // Summary
-  summary String? @db.Text // Use @db.Text for longer strings
-
-  // Skills
-  // An array of strings is perfect for the MVP
-  skills String[]
-
-  // --- Relations ---
-  // A resume can have multiple work experiences and education entries
-  experience WorkExperience[]
-  education  Education[]
+  resume    Resume?
 }
 
-// Model for Work Experience entries
+// Main Resume Model
+model Resume {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Personal Info
+  fullName  String?
+  email     String?
+  phone     String?
+  location  String?
+  website   String?
+  
+  // Summary
+  summary   String?
+  
+  // Skills (simple array of strings)
+  skills    String[]
+
+  // Relations to other models
+  workExperience WorkExperience[] 
+  educations     Education[]      
+  projects       Project[]        
+  certifications Certification[]  
+  volunteerWork  VolunteerWork[]  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Work Experience Model
 model WorkExperience {
   id          String   @id @default(cuid())
-  resumeId    String   // Foreign key to link to the Resume
+  resumeId    String
   resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  
   jobTitle    String
   company     String
-  location    String?
-  startDate   DateTime
-  endDate     DateTime? // Optional, for current jobs
-  description String?   @db.Text
+  location    String? 
+  startDate   DateTime?
+  endDate     DateTime?
+  description String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// Model for Education entries
+// Education Model
 model Education {
   id          String   @id @default(cuid())
-  resumeId    String   // Foreign key to link to the Resume
+  resumeId    String
   resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  
   school      String
   degree      String
-  fieldOfStudy String?
-  startDate   DateTime
-  endDate     DateTime? // Optional, for current studies
-  description String?   @db.Text
+  fieldOfStudy String? 
+  startDate   DateTime?
+  endDate     DateTime?
+  description String? // <<<--- THIS IS THE FIX
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+// --- NEW MODELS ---
 
-// --- Career Bot Models ---
-// This model stores individual chat messages for the AI Career Bot
+// Project Model
+model Project {
+  id          String   @id @default(cuid())
+  resumeId    String
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?
+  url         String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Certification Model
+model Certification {
+  id          String   @id @default(cuid())
+  resumeId    String
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  name        String
+  issuer      String?
+  date        DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Volunteer Work Model
+model VolunteerWork {
+  id          String   @id @default(cuid())
+  resumeId    String
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  organization String
+  role         String
+  startDate    DateTime?
+  endDate      DateTime?
+  description  String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- CAREER BOT MODEL ---
+
+// Chat History Model
 model ChatMessage {
   id        String   @id @default(cuid())
-  userId    String   // Links to Clerk's user ID
+  userId    String   // This will be the Clerk User ID
+  role      String   // "user" or "model"
+  content   String
   createdAt DateTime @default(now())
-
-  // Role can be "user" or "model" (for the AI)
-  role    String
-  content String @db.Text
-
-  // Add an index to quickly query messages by user
-  @@index([userId])
+  
+  @@index([userId, createdAt]) // Index for fast chat history retrieval
 }
