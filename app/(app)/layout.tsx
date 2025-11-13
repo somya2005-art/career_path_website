@@ -8,21 +8,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     // 1. The Provider wraps everything
     <SidebarProvider>
-      {/* This div creates the main layout:
-          - flex-row for desktop
-          - flex-col for mobile
-          - h-screen to fill the viewport
-      */}
       <div className="flex h-screen w-full flex-col md:flex-row">
         {/* 2. The Sidebar component */}
         <AppSidebar />
 
         {/* 3. The Main Content
             - flex-1 tells it to take up all remaining space
-            - overflow-auto makes the content area scrollable, not the whole page
+            - h-screen makes it fill the viewport height
+            - overflow-auto has been REMOVED.
         */}
-        <main className="flex-1 overflow-auto bg-white dark:bg-neutral-900">
-          {/* Your page content (e.g., resume/page.tsx) will be rendered here */}
+        <main className="flex-1 h-screen bg-white dark:bg-neutral-900">
+          {/* Your page content will be rendered here */}
           {children}
         </main>
       </div>
