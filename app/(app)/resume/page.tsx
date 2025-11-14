@@ -37,9 +37,7 @@ export default async function ResumePage() {
           keeping the "Live Preview" h2 sticky.
         */}
         <div className="w-full lg:w-3/5 h-full flex flex-col bg-gray-200 dark:bg-neutral-800">
-          <div className="p-4 md:p-8 pb-4">
-            <h2 className="text-2xl font-semibold">Live Preview</h2>
-          </div>
+          <div className="p-4 md:p-8 pb-2"></div>
 
           {/* This is the scrolling container for the A4 page */}
           <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-8">

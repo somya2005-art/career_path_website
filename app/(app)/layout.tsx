@@ -6,19 +6,15 @@ import { AppSidebar } from "./_components/app-sidebar";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    // 1. The Provider wraps everything
     <SidebarProvider>
-      <div className="flex h-screen w-full flex-col md:flex-row">
-        {/* 2. The Sidebar component */}
-        <AppSidebar />
+      <div className="flex w-full min-h-screen md:flex-row">
+        {/* --- SIDEBAR COLUMN (sticky + full height) --- */}
+        <div className="flex-none h-screen sticky top-0">
+          <AppSidebar />
+        </div>
 
-        {/* 3. The Main Content
-            - flex-1 tells it to take up all remaining space
-            - h-screen makes it fill the viewport height
-            - overflow-auto has been REMOVED.
-        */}
-        <main className="flex-1 h-screen bg-white dark:bg-neutral-900">
-          {/* Your page content will be rendered here */}
+        {/* --- MAIN CONTENT (scrolls independently) --- */}
+        <main className="flex-1 overflow-auto bg-white dark:bg-neutral-900">
           {children}
         </main>
       </div>
