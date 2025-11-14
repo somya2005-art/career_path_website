@@ -1,51 +1,13 @@
 "use server";
 
 // This file contains server-side logic for fetching and saving resume data
-// These functions run securely on the server, not in the client browser
 
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { ResumeState } from "@/lib/types";
 import prisma from "@/lib/prisma"; // Import our global prisma instance
+import { syncUser } from "@/lib/user"; // --- IMPORT THE NEW SHARED FUNCTION ---
 
-// --- HELPER FUNCTION TO SYNC USER ---
-/**
- * Ensures the currently authenticated Clerk user exists in our local database.
- * @returns The local database user ID.
- * @throws An error if the user is not authenticated.
- */
-async function syncUser(): Promise<string> {
-  const user = await currentUser(); // Get full user details from Clerk
-  if (!user) {
-    throw new Error("Not authenticated");
-  }
+// --- We have REMOVED the old syncUser function from this file ---
 
-  const userId = user.id;
-
-  // 1. Check if user already exists in our DB
-  const dbUser = await prisma.user.findUnique({
-    where: { id: userId },
-  });
-
-  // 2. If not, create them
-  if (!dbUser) {
-    await prisma.user.create({
-      data: {
-        id: userId,
-        email: user.emailAddresses[0]?.emailAddress ?? "", // Get primary email
-        firstName: user.firstName,
-        lastName: user.lastName,
-        imageUrl: user.imageUrl,
-      },
-    });
-  }
-
-  // 3. Return the user ID
-  return userId;
-}
-
-// This is the shape of the data we'll return
-// It's the same as our Prisma schema, but we ensure
-// optional fields are null if not present.
 const defaultResumeData: ResumeState = {
   fullName: "",
   email: "",
@@ -64,22 +26,21 @@ const defaultResumeData: ResumeState = {
 // Server Action to get the user's resume data
 export async function getResumeData(): Promise<ResumeState> {
   try {
-    const userId = await syncUser(); // <-- CALL THE HELPER FIRST
+    const user = await syncUser(); // <-- CALL THE SHARED HELPER
+    const userId = user.id;
 
     const resume = await prisma.resume.findUnique({
       where: { userId },
       include: {
-        workExperience: true, // Corrected name
-        educations: true, // Corrected name
-        projects: true, // NEW
-        certifications: true, // NEW
-        volunteerWork: true, // NEW
+        workExperience: true,
+        educations: true,
+        projects: true,
+        certifications: true,
+        volunteerWork: true,
       },
     });
 
     if (resume) {
-      // If resume exists, format it to match our ResumeState
-      // We do this to ensure all fields are present, even if null
       return {
         ...defaultResumeData,
         ...resume,
@@ -89,23 +50,20 @@ export async function getResumeData(): Promise<ResumeState> {
         location: resume.location || "",
         website: resume.website || "",
         summary: resume.summary || "",
-        // Ensure arrays are arrays even if empty
         workExperience: resume.workExperience || [],
-        education: resume.educations || [], // Corrected name
+        education: resume.educations || [],
         projects: resume.projects || [],
         certifications: resume.certifications || [],
         volunteerWork: resume.volunteerWork || [],
       };
     }
 
-    // If no resume, return the default empty state
     return defaultResumeData;
   } catch (error) {
     console.error("Error in getResumeData:", error);
     if ((error as Error).message === "Not authenticated") {
       throw new Error("You must be logged in to get resume data.");
     }
-    // On error, return default state instead of throwing
     return defaultResumeData;
   }
 }
@@ -115,7 +73,8 @@ export async function saveResumeData(
   resumeState: ResumeState
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const userId = await syncUser(); // <-- CALL THE HELPER FIRST
+    const user = await syncUser(); // <-- CALL THE SHARED HELPER
+    const userId = user.id;
 
     const {
       workExperience,
@@ -126,17 +85,13 @@ export async function saveResumeData(
       ...resumeDetails
     } = resumeState;
 
-    // Helper function to map data and remove IDs for creation
-    // This prevents Prisma from trying to link to non-existent IDs
     const createData = (item: any) => {
       const { id, resumeId, ...data } = item;
       return data;
     };
 
-    // Use prisma.upsert to create a new resume or update an existing one
     await prisma.resume.upsert({
       where: { userId },
-      // Create a new resume if one doesn't exist
       create: {
         ...resumeDetails,
         userId,
@@ -146,14 +101,11 @@ export async function saveResumeData(
         certifications: { create: certifications.map(createData) },
         volunteerWork: { create: volunteerWork.map(createData) },
       },
-      // Update the existing resume
       update: {
         ...resumeDetails,
-        // For updates, we delete old entries and create new ones
-        // This is simpler than trying to match IDs for the MVP
         workExperience: {
-          deleteMany: {}, // Delete all old
-          create: workExperience.map(createData), // Create new
+          deleteMany: {},
+          create: workExperience.map(createData),
         },
         educations: {
           deleteMany: {},

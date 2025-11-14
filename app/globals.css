@@ -121,3 +121,34 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* --- Add this to the bottom of app/globals.css --- */
+
+/* For Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #3f3f46; /* A dark neutral color */
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #52525b;
+}
+
+/* For Firefox */
+@supports (scrollbar-color: auto) {
+  * {
+    scrollbar-color: #3f3f46 transparent; /* thumb and track */
+    scrollbar-width: thin;
+  }
+}

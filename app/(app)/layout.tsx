@@ -14,7 +14,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* --- MAIN CONTENT (scrolls independently) --- */}
-        <main className="flex-1 overflow-auto bg-white dark:bg-neutral-900">
+        {/* --- THIS IS THE FIX ---
+          We remove `overflow-auto` and add `h-screen`.
+          This stops the <main> tag from scrolling and makes it
+          a full-height container. The page component (e.g., chat/page.tsx)
+          will now be responsible for its *own* scrolling.
+        */}
+        <main className="flex-1 h-screen bg-white dark:bg-neutral-900">
           {children}
         </main>
       </div>
