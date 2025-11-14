@@ -23,7 +23,9 @@ export default async function ResumePage() {
         */}
         <div className="w-full lg:w-2/5 h-full flex flex-col">
           <div className="p-4 md:p-8 pb-4">
-            <h1 className="text-3xl font-bold">Build Your Resume</h1>
+            <h1 className="text-3xl font-bold [text-shadow:_0_0_12px_rgba(255,255,255,0.5)]">
+              Build Your Resume
+            </h1>
           </div>
 
           {/* This is the scrolling part for the form */}

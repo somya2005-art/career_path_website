@@ -93,7 +93,7 @@ export default function ChatPage() {
     <div className="relative w-full h-full flex flex-col max-w-4xl mx-auto px-4 pt-6 pb-25">
       {/* Header */}
       <div className="flex flex-col items-center text-center mb-6">
-        <h1 className="text-3xl md:text-4xl font-semibold text-white">
+        <h1 className="text-3xl md:text-4xl font-semibold text-white [text-shadow:_0_0_12px_rgba(255,255,255,0.5)]">
           Career Bot
         </h1>
       </div>

@@ -45,7 +45,9 @@ export default function AnalyzerPage() {
     // We add padding to the page, which we removed from the layout
     <div className="max-w-4xl mx-auto p-4 md:p-8">
       {/* --- FIX: Styled the heading --- */}
-      <h1 className="text-4xl font-bold mb-4 text-white">Resume Analyzer</h1>
+      <h1 className="text-4xl font-bold mb-4 text-white [text-shadow:_0_0_12px_rgba(255,255,255,0.5)]">
+        Resume Analyzer
+      </h1>
       <p className="text-neutral-400 mb-6">
         Paste a job description below to see how well your saved resume matches
         the role.
