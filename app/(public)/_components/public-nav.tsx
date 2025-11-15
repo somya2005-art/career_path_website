@@ -1,36 +1,33 @@
 "use client";
+
 import {
   Navbar,
   NavBody,
   NavItems,
   MobileNav,
-  NavbarLogo, // We'll keep the import but replace the component
-  NavbarButton,
+  NavbarLogo, // kept for API parity (not used)
+  NavbarButton, // We still use this for the mobile menu buttons
   MobileNavHeader,
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
+import { useUser, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { cn } from "@/lib/utils"; // Import cn
+import { cn } from "@/lib/utils";
 
-// 1. --- THIS IS THE FIX ---
-// I have removed the SVG icon, leaving only the text.
+// Minimal text logo component
 const CareerPathLogo = () => {
   return (
     <Link
-      href="/" // Links to the landing page
+      href="/"
       className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-white"
     >
-      {/* The SVG icon has been removed. */}
-
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        // Use the CSS variable for the font
-        className="font-['var(--font-bebas-neue)'] text-2xl tracking-wider whitespace-pre text-white"
+        className="text-3xl tracking-wider whitespace-pre text-white font-logo"
       >
         Career Path
       </motion.span>
@@ -38,51 +35,72 @@ const CareerPathLogo = () => {
   );
 };
 
-// 2. This is our new PublicNav, using the Resizable Navbar
 export function PublicNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isSignedIn } = useUser();
 
-  // We have no items for now
   const navItems: { name: string; link: string }[] = [];
 
   return (
-    <Navbar
-      // We make the navbar transparent
-      className="bg-transparent sticky"
-    >
-      {/* --- Desktop Navigation --- */}
+    <Navbar className="bg-transparent sticky top-0 z-50">
       <NavBody>
-        {/* Use our custom logo */}
         <CareerPathLogo />
 
         <NavItems items={navItems} />
 
-        {/* --- 2. THIS IS THE FIX --- */}
-        {/* We add our custom dark-mode classes to the buttons */}
-        <div className="flex items-center gap-4">
-          <SignInButton mode="modal">
-            <NavbarButton
-              variant="secondary" // "secondary" is the ghost/un-styled one
-              className="text-white hover:bg-white/10 hover:text-white"
-            >
-              Sign In
-            </NavbarButton>
-          </SignInButton>
-          <SignUpButton mode="modal">
-            <NavbarButton
-              variant="primary" // "primary" is the main one
-              className="border-white border text-white bg-transparent hover:bg-white hover:text-black"
-            >
-              Get Started
-            </NavbarButton>
-          </SignUpButton>
+        <div className="flex items-center gap-3">
+          {isSignedIn ? (
+            // --- SIGNED IN (Desktop) ---
+            <>
+              {/* --- FIX: We use a Link styled as a button --- */}
+              <Link
+                href="/dashboard"
+                className={cn(
+                  // We manually add the button styles
+                  "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2",
+                  // Your custom styles
+                  "text-white hover:bg-white/10 hover:text-white"
+                )}
+              >
+                Dashboard
+              </Link>
+
+              <div>
+                <UserButton />
+              </div>
+            </>
+          ) : (
+            // --- SIGNED OUT (Desktop) ---
+            <>
+              {/* --- FIX: We use a Link styled as a button --- */}
+              <Link
+                href="/sign-in"
+                className={cn(
+                  "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2",
+                  "text-white hover:bg-white/10 hover:text-white"
+                )}
+              >
+                Sign In
+              </Link>
+
+              {/* --- FIX: We use a Link styled as a button --- */}
+              <Link
+                href="/sign-up"
+                className={cn(
+                  "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2",
+                  "border-white border text-white bg-transparent hover:bg-white/10"
+                )}
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
       </NavBody>
 
-      {/* --- Mobile Navigation --- */}
+      {/* Mobile nav */}
       <MobileNav>
         <MobileNavHeader>
-          {/* Use our custom logo */}
           <CareerPathLogo />
           <MobileNavToggle
             isOpen={isMobileMenuOpen}
@@ -94,7 +112,6 @@ export function PublicNav() {
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
         >
-          {/* Mobile nav links (if you add any) */}
           {navItems.map((item, idx) => (
             <a
               key={`mobile-link-${idx}`}
@@ -106,26 +123,50 @@ export function PublicNav() {
             </a>
           ))}
 
-          {/* Replaced dummy buttons with Clerk buttons */}
           <div className="flex w-full flex-col gap-4 pt-4">
-            <SignInButton mode="modal">
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="secondary"
-                className="w-full"
-              >
-                Sign In
-              </NavbarButton>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full"
-              >
-                Get Started
-              </NavbarButton>
-            </SignUpButton>
+            {isSignedIn ? (
+              // --- SIGNED IN (Mobile) ---
+              <>
+                {/* We can keep NavbarButton here because <Link> is the parent */}
+                <Link href="/dashboard">
+                  <NavbarButton
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    variant="secondary"
+                    className="w-full"
+                  >
+                    Dashboard
+                  </NavbarButton>
+                </Link>
+
+                <div className="pl-2 pt-2">
+                  <UserButton afterSignOutUrl="/" />
+                </div>
+              </>
+            ) : (
+              // --- SIGNED OUT (Mobile) ---
+              <>
+                {/* We can keep NavbarButton here because <Link> is the parent */}
+                <Link href="/sign-in">
+                  <NavbarButton
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    variant="secondary"
+                    className="w-full"
+                  >
+                    Sign In
+                  </NavbarButton>
+                </Link>
+
+                <Link href="/sign-up">
+                  <NavbarButton
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    variant="primary"
+                    className="w-full"
+                  >
+                    Get Started
+                  </NavbarButton>
+                </Link>
+              </>
+            )}
           </div>
         </MobileNavMenu>
       </MobileNav>
