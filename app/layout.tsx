@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, Alegreya } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { neobrutalism } from "@clerk/themes";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
-const alegreya = Alegreya({
+const outfit = Outfit({
   subsets: ["latin"],
   weight: ["400", "700"], // Get a regular and bold weight
-  variable: "--font-alegreya", // Define as a CSS variable
+  variable: "--font-outfit", // Define as a CSS variable
 });
 
 export const metadata: Metadata = {
@@ -28,7 +28,7 @@ export default function RootLayout({
         <body
           className={cn(
             inter.className,
-            alegreya.variable,
+            outfit.variable,
             "antialiased overflow-x-hidden",
             "bg-white dark:bg-neutral-900"
           )}

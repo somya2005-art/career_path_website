@@ -9,7 +9,7 @@ import {
 } from "motion/react";
 
 import React, { useRef, useState } from "react";
-
+import Link from "next/link"; // --- 1. IMPORT NEXT/LINK ---
 
 interface NavbarProps {
   children: React.ReactNode;
@@ -52,13 +52,17 @@ interface MobileNavMenuProps {
 export const Navbar = ({ children, className }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({
-    target: ref,
+    // We change the target to `document` to listen to the whole page
+    // instead of the component itself.
+    // target: ref,
     offset: ["start start", "end start"],
   });
   const [visible, setVisible] = useState<boolean>(false);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > 100) {
+    // This threshold controls *when* the background appears
+    if (latest > 20) {
+      // Was 100, 20 feels more responsive
       setVisible(true);
     } else {
       setVisible(false);
@@ -68,16 +72,16 @@ export const Navbar = ({ children, className }: NavbarProps) => {
   return (
     <motion.div
       ref={ref}
-      // IMPORTANT: Change this to class of `fixed` if you want the navbar to be fixed
-      className={cn("sticky inset-x-0 top-20 z-40 w-full", className)}
+      // This is the component from your public-nav.tsx
+      className={cn("sticky inset-x-0 top-0 z-50 w-full", className)}
     >
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
           ? React.cloneElement(
               child as React.ReactElement<{ visible?: boolean }>,
-              { visible },
+              { visible }
             )
-          : child,
+          : child
       )}
     </motion.div>
   );
@@ -86,13 +90,15 @@ export const Navbar = ({ children, className }: NavbarProps) => {
 export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   return (
     <motion.div
+      // --- RESTORED ANIMATION PROPERTIES ---
       animate={{
         backdropFilter: visible ? "blur(10px)" : "none",
+        // Adjusted for a softer glassmorphic shadow
         boxShadow: visible
-          ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
+          ? "0 0 16px rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.08) inset"
           : "none",
-        width: visible ? "40%" : "100%",
-        y: visible ? 20 : 0,
+        width: visible ? "40%" : "100%", // Keeps the width animation
+        y: visible ? 20 : 0, // Keeps the vertical movement
       }}
       transition={{
         type: "spring",
@@ -104,8 +110,12 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
       }}
       className={cn(
         "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-2 lg:flex dark:bg-transparent",
-        visible && "bg-white/80 dark:bg-neutral-950/80",
-        className,
+
+        // --- UPDATED BACKGROUND FOR GLASS EFFECT ---
+        visible &&
+          "bg-black/10 dark:bg-white/5 border border-white/10 rounded-xl backdrop-blur-md", // Added rounded-xl here
+
+        className
       )}
     >
       {children}
@@ -121,11 +131,13 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
       onMouseLeave={() => setHovered(null)}
       className={cn(
         "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium text-zinc-600 transition duration-200 hover:text-zinc-800 lg:flex lg:space-x-2",
-        className,
+        className
       )}
     >
       {items.map((item, idx) => (
-        <a
+        // --- 3. THIS IS A BUG FIX ---
+        // Replaced <a> with <Link> to prevent <a> in <a> errors
+        <Link
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
           className="relative px-4 py-2 text-neutral-600 dark:text-neutral-300"
@@ -139,7 +151,8 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
             />
           )}
           <span className="relative z-20">{item.name}</span>
-        </a>
+        </Link>
+        // --- END OF BUG FIX ---
       ))}
     </motion.div>
   );
@@ -148,15 +161,16 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
 export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
   return (
     <motion.div
+      // --- RESTORED ANIMATION PROPERTIES ---
       animate={{
         backdropFilter: visible ? "blur(10px)" : "none",
         boxShadow: visible
-          ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
+          ? "0 0 16px rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.08) inset"
           : "none",
         width: visible ? "90%" : "100%",
         paddingRight: visible ? "12px" : "0px",
         paddingLeft: visible ? "12px" : "0px",
-        borderRadius: visible ? "4px" : "2rem",
+        borderRadius: visible ? "1rem" : "2rem", // Adjusted to 1rem for a consistent look with desktop
         y: visible ? 20 : 0,
       }}
       transition={{
@@ -166,14 +180,20 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
       }}
       className={cn(
         "relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden",
-        visible && "bg-white/80 dark:bg-neutral-950/80",
-        className,
+
+        // --- UPDATED BACKGROUND FOR GLASS EFFECT ---
+        visible &&
+          "bg-black/10 dark:bg-white/5 border border-white/10 rounded-xl backdrop-blur-md", // Added rounded-xl here
+
+        className
       )}
     >
       {children}
     </motion.div>
   );
 };
+
+// ... (The rest of the file is unchanged) ...
 
 export const MobileNavHeader = ({
   children,
@@ -183,7 +203,7 @@ export const MobileNavHeader = ({
     <div
       className={cn(
         "flex w-full flex-row items-center justify-between",
-        className,
+        className
       )}
     >
       {children}
@@ -205,8 +225,10 @@ export const MobileNavMenu = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className={cn(
-            "absolute inset-x-0 top-16 z-50 flex w-full flex-col items-start justify-start gap-4 rounded-lg bg-white px-4 py-8 shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] dark:bg-neutral-950",
-            className,
+            // Use our new glass style for the mobile menu
+            "absolute inset-x-0 top-16 z-50 flex w-full flex-col items-start justify-start gap-4 rounded-lg p-4",
+            "bg-black/20 dark:bg-white/10 backdrop-blur-md border border-white/10",
+            className
           )}
         >
           {children}

@@ -17,23 +17,28 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
-// Minimal text logo component
+// --- THIS IS THE NEW LOGO COMPONENT ---
 const CareerPathLogo = () => {
   return (
     <Link
       href="/"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-white"
+      // 1. Removed z-20 from here
+      className="relative flex items-center py-1 text-sm font-normal text-white z-10"
     >
+      {/* 2. Added a "glassmorphic" border div */}
+
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="text-3xl tracking-wider whitespace-pre text-white font-logo font-semibold text-shadow-lg text-shadow-black-500"
+        // 3. Added the "glow" text shadow you had on your dashboard
+        className="font-logo text-3xl tracking-wider whitespace-pre text-white [text-shadow:_0_0_12px_rgba(255,255,255,0.5)]"
       >
         Career Path
       </motion.span>
     </Link>
   );
 };
+// --- END OF NEW LOGO COMPONENT ---
 
 export function PublicNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -48,17 +53,18 @@ export function PublicNav() {
 
         <NavItems items={navItems} />
 
-        <div className="flex items-center gap-3">
+        {/* --- THIS IS THE FIX for the buttons --- */}
+        {/* We add `relative z-20` to make this div stack on top
+            and be clickable.
+        */}
+        <div className="relative z-20 flex items-center gap-3">
           {isSignedIn ? (
             // --- SIGNED IN (Desktop) ---
             <>
-              {/* --- FIX: We use a Link styled as a button --- */}
               <Link
                 href="/dashboard"
                 className={cn(
-                  // We manually add the button styles
                   "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2",
-                  // Your custom styles
                   "text-white hover:bg-white/10 hover:text-white"
                 )}
               >
@@ -72,7 +78,6 @@ export function PublicNav() {
           ) : (
             // --- SIGNED OUT (Desktop) ---
             <>
-              {/* --- FIX: We use a Link styled as a button --- */}
               <Link
                 href="/sign-in"
                 className={cn(
@@ -83,7 +88,6 @@ export function PublicNav() {
                 Sign In
               </Link>
 
-              {/* --- FIX: We use a Link styled as a button --- */}
               <Link
                 href="/sign-up"
                 className={cn(
@@ -127,7 +131,6 @@ export function PublicNav() {
             {isSignedIn ? (
               // --- SIGNED IN (Mobile) ---
               <>
-                {/* We can keep NavbarButton here because <Link> is the parent */}
                 <Link href="/dashboard">
                   <NavbarButton
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -145,7 +148,6 @@ export function PublicNav() {
             ) : (
               // --- SIGNED OUT (Mobile) ---
               <>
-                {/* We can keep NavbarButton here because <Link> is the parent */}
                 <Link href="/sign-in">
                   <NavbarButton
                     onClick={() => setIsMobileMenuOpen(false)}

@@ -92,8 +92,7 @@ export default function AboutPage() {
         <div className="flex flex-col gap-6">
           <GlassCard className="p-8">
             <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-400" /> Why Career Path
-              Exists
+              Why Career Path Exists
             </h3>
             <p className="text-neutral-300">
               Job hunting is fragmented. Resume building happens in one place,
@@ -104,7 +103,7 @@ export default function AboutPage() {
 
           <GlassCard className="p-8">
             <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-              <Target className="w-5 h-5 text-purple-400" /> Our Vision
+              Our Vision
             </h3>
             <p className="text-neutral-300">
               A world where every individual has access to personalized,
