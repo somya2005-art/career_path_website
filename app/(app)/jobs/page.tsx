@@ -28,8 +28,8 @@ const employmentTypesList = [
 export default function JobsPage() {
   // --- New State for Filters ---
   const [query, setQuery] = useState("");
-  const [location, setLocation] = useState("India"); // Default to India
-  const [datePosted, setDatePosted] = useState("all");
+  const [location, setLocation] = useState(""); // Default to India
+  const [datePosted, setDatePosted] = useState("");
   const [workFromHome, setWorkFromHome] = useState(false);
   const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
 
@@ -84,7 +84,7 @@ export default function JobsPage() {
     <div className="h-full flex flex-col max-w-5xl mx-auto p-4 md:p-8">
       {/* --- Page Header --- */}
       <header className="mb-4">
-        <h1 className="text-4xl font-bold mb-2 text-white [text-shadow:_0_0_12px_rgba(255,255,255,0.5)]">
+        <h1 className="text-4xl font-bold mb-2 text-white [text-shadow:_0_0_12px_purple]">
           Job Portal
         </h1>
         <p className="text-neutral-400">

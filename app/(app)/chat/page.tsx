@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { LoaderFive } from "@/components/ui/loader";
 
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 
@@ -93,7 +94,7 @@ export default function ChatPage() {
     <div className="relative w-full h-full flex flex-col max-w-4xl mx-auto px-4 pt-6 pb-25">
       {/* Header */}
       <div className="flex flex-col items-center text-center mb-6">
-        <h1 className="text-3xl md:text-4xl font-semibold text-white [text-shadow:_0_0_12px_rgba(255,255,255,0.5)]">
+        <h1 className="text-3xl md:text-4xl font-semibold text-white [text-shadow:_0_0_12px_purple]">
           Career Bot
         </h1>
       </div>
@@ -106,7 +107,7 @@ export default function ChatPage() {
       >
         {isHistoryLoading && (
           <div className="flex justify-center items-center h-40">
-            <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+            <LoaderFive text="Loading chat..." />
           </div>
         )}
 
