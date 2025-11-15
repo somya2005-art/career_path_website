@@ -27,7 +27,7 @@ const CareerPathLogo = () => {
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="text-3xl tracking-wider whitespace-pre text-white font-logo"
+        className="text-3xl tracking-wider whitespace-pre text-white font-logo font-semibold text-shadow-lg text-shadow-black-500"
       >
         Career Path
       </motion.span>
