@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+// --- 1. IMPORT THE NEW COMPONENTS ---
+import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
 
 // Glass card
 const GlassCard = ({ children, className = "" }: any) => (
@@ -51,21 +53,32 @@ const ListItem = ({ children }: { children: React.ReactNode }) => (
 
 export default function AboutPage() {
   return (
-    <div className="relative z-10 max-w-6xl mx-auto px-6 py-24">
-      {/* ---------------- HERO ---------------- */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
+    // We add pt-16 to push content below the sticky navbar
+    <div className="relative z-10 max-w-6xl mx-auto px-6 py-16 md:py-24">
+      {/* --- 2. THIS IS THE FIX --- */}
+      {/* We wrap the H1 and P tags in the new HeroHighlight component */}
+      <HeroHighlight
+        containerClassName="bg-transparent" // Make the container transparent
       >
-        <h1 className="text-center text-5xl font-extrabold text-white">
-          About <span className="text-purple-400">Career Path</span>
-        </h1>
+        <motion.h1
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center text-5xl font-extrabold text-white"
+        >
+          About <Highlight>Career Path</Highlight>
+        </motion.h1>
 
-        <p className="max-w-3xl mx-auto mt-6 text-center text-lg text-neutral-300">
+        <motion.p
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="max-w-3xl mx-auto mt-6 text-center text-lg text-neutral-300"
+        >
           A next-generation career platform designed to help you build, refine,
           and accelerate your professional journey — powered by cutting-edge AI.
-        </p>
-      </motion.div>
+        </motion.p>
+      </HeroHighlight>
+      {/* --- END OF FIX --- */}
 
       {/* ---------------- MISSION SECTION ---------------- */}
       <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
