@@ -1,59 +1,209 @@
-// This is the new "About" page.
-// It will automatically use your `(public)/layout.tsx`
+"use client";
 
-import { CheckCircle } from "lucide-react";
+import {
+  CheckCircle,
+  Target,
+  Sparkles,
+  Rocket,
+  Bot,
+  FileText,
+  Briefcase,
+  Search,
+} from "lucide-react";
+import { motion } from "motion/react";
+import { cn } from "@/lib/utils";
 
-// A simple list item component
-const FeatureListItem = ({ children }: { children: React.ReactNode }) => (
-  <li className="flex items-start">
-    <CheckCircle className="w-5 h-5 mr-3 mt-1 text-blue-500 shrink-0" />
+// Glass card
+const GlassCard = ({ children, className = "" }: any) => (
+  <div
+    className={cn(
+      "bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-md",
+      "transition hover:scale-[1.01] hover:bg-white/10",
+      className
+    )}
+  >
+    {children}
+  </div>
+);
+
+// Feature item with icon
+const FeatureItem = ({ icon, title, desc }: any) => (
+  <GlassCard>
+    <div className="flex items-start gap-4">
+      <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-purple-500/20 text-purple-300">
+        {icon}
+      </div>
+      <div>
+        <h3 className="text-xl font-semibold text-white">{title}</h3>
+        <p className="text-neutral-300 mt-2">{desc}</p>
+      </div>
+    </div>
+  </GlassCard>
+);
+
+// Checklist list item
+const ListItem = ({ children }: { children: React.ReactNode }) => (
+  <li className="flex items-start gap-3">
+    <CheckCircle className="w-5 h-5 text-purple-400 mt-1 shrink-0" />
     <span className="text-neutral-300">{children}</span>
   </li>
 );
 
 export default function AboutPage() {
   return (
-    // We add padding-top to account for the transparent navbar
-    <div className="relative z-10 max-w-4xl mx-auto px-4 py-24 sm:py-32">
-      <h1 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl text-center">
-        About Career Path
-      </h1>
-      <p className="max-w-3xl mx-auto mt-6 text-lg text-neutral-300 text-center">
-        Our mission is to empower professionals by providing the tools and
-        insights needed to navigate every step of their career journey with
-        confidence.
-      </p>
+    <div className="relative z-10 max-w-6xl mx-auto px-6 py-24">
+      {/* ---------------- HERO ---------------- */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <h1 className="text-center text-5xl font-extrabold text-white">
+          About <span className="text-purple-400">Career Path</span>
+        </h1>
 
-      <div className="mt-16 p-8 bg-black/10 dark:bg-white/5 backdrop-blur-sm border border-white/5 rounded-lg">
-        <h2 className="text-3xl font-semibold text-white mb-6">What We Do</h2>
-        <p className="text-neutral-300 mb-6">
-          Finding a job is hard. The process is fragmented—you build a resume in
-          one tool, search for jobs on another, and practice for interviews...
-          somewhere else. Career Path was built to bring all of those essential
-          tools under one roof, powered by cutting-edge AI.
+        <p className="max-w-3xl mx-auto mt-6 text-center text-lg text-neutral-300">
+          A next-generation career platform designed to help you build, refine,
+          and accelerate your professional journey — powered by cutting-edge AI.
+        </p>
+      </motion.div>
+
+      {/* ---------------- MISSION SECTION ---------------- */}
+      <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+        <GlassCard className="p-10">
+          <h2 className="text-3xl font-bold text-white mb-4">Our Mission</h2>
+          <p className="text-neutral-300 leading-relaxed">
+            Career Path exists for one purpose: to empower individuals with the
+            tools, insights, and confidence they need to navigate the job market
+            with clarity.
+          </p>
+
+          <ul className="space-y-3 mt-6">
+            <ListItem>Transparent, data-driven resume insights</ListItem>
+            <ListItem>Personalized career guidance available 24/7</ListItem>
+            <ListItem>
+              Real-time job opportunities tailored to your profile
+            </ListItem>
+            <ListItem>
+              A modern platform designed for students & professionals
+            </ListItem>
+          </ul>
+        </GlassCard>
+
+        <div className="flex flex-col gap-6">
+          <GlassCard className="p-8">
+            <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-purple-400" /> Why Career Path
+              Exists
+            </h3>
+            <p className="text-neutral-300">
+              Job hunting is fragmented. Resume building happens in one place,
+              analysis in another, job search in another. We unify everything —
+              powered by intelligent automation.
+            </p>
+          </GlassCard>
+
+          <GlassCard className="p-8">
+            <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+              <Target className="w-5 h-5 text-purple-400" /> Our Vision
+            </h3>
+            <p className="text-neutral-300">
+              A world where every individual has access to personalized,
+              high-quality career guidance — regardless of background or
+              experience.
+            </p>
+          </GlassCard>
+        </div>
+      </div>
+
+      {/* ---------------- FEATURE CARDS ---------------- */}
+      <div className="mt-24">
+        <h2 className="text-3xl font-bold text-white text-center">
+          What Career Path Offers
+        </h2>
+        <p className="text-neutral-300 text-center mt-3 max-w-2xl mx-auto">
+          Everything you need in your career toolkit — unified, intelligent, and
+          easy to use.
         </p>
 
-        <ul className="space-y-4">
-          <FeatureListItem>
-            Build a Professional Resume: Our 7-section builder helps you create
-            a comprehensive, well-structured resume with a live preview.
-          </FeatureListItem>
-          <FeatureListItem>
-            Analyze Your Match: Instantly compare your saved resume against any
-            job description to get a match score, identify missing TESTS, and
-            see your strengths.
-          </FeatureListItem>
-          <FeatureListItem>
-            Chat with an AI Coach: Our Career Bot is available 24/7 to help you
-            practice for interviews, explore new career paths, or refine your
-            resume's bullet points.
-          </FeatureListItem>
-          <FeatureListItem>
-            Find Opportunities: Our job portal connects you to real-time
-            openings and lets you filter for exactly what you want, all in one
-            place.
-          </FeatureListItem>
-        </ul>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+          <FeatureItem
+            icon={<FileText className="w-6 h-6" />}
+            title="Resume Builder"
+            desc="Craft a professional, structured resume using our guided 7-section builder."
+          />
+          <FeatureItem
+            icon={<Search className="w-6 h-6" />}
+            title="Resume Analyzer"
+            desc="Compare your resume with any job posting. See match scores & missing skills instantly."
+          />
+          <FeatureItem
+            icon={<Bot className="w-6 h-6" />}
+            title="AI Career Bot"
+            desc="A 24/7 personal career assistant to help prepare for interviews and refine your resume."
+          />
+          <FeatureItem
+            icon={<Briefcase className="w-6 h-6" />}
+            title="Smart Job Portal"
+            desc="Discover real-time openings with intelligent filtering and role-based suggestions."
+          />
+          <FeatureItem
+            icon={<Rocket className="w-6 h-6" />}
+            title="Career Acceleration"
+            desc="Get personalized insights to push your skills, strategy, and confidence forward."
+          />
+          <FeatureItem
+            icon={<Sparkles className="w-6 h-6" />}
+            title="Designed for Students"
+            desc="Built with simplicity & clarity so students can focus on progress, not complexity."
+          />
+        </div>
+      </div>
+
+      {/* ---------------- TIMELINE SECTION ---------------- */}
+      <div className="mt-24">
+        <h2 className="text-3xl font-bold text-white mb-6 text-center">
+          Your Journey With Career Path
+        </h2>
+        <p className="text-neutral-300 text-center max-w-2xl mx-auto">
+          We support you at every stage of your career development.
+        </p>
+
+        <div className="mt-12 space-y-8 border-l border-white/10 pl-8">
+          <div>
+            <h3 className="text-xl font-semibold text-white">
+              1. Build Your Foundation
+            </h3>
+            <p className="text-neutral-300 mt-2">
+              Start with a beautifully structured resume tailored to your field.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-white">
+              2. Improve Your Match
+            </h3>
+            <p className="text-neutral-300 mt-2">
+              Use analysis tools to align your experience with job requirements.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-white">
+              3. Explore Opportunities
+            </h3>
+            <p className="text-neutral-300 mt-2">
+              Browse curated job listings and discover roles that fit your
+              profile.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-white">
+              4. Enhance Your Confidence
+            </h3>
+            <p className="text-neutral-300 mt-2">
+              Practice interviews and refine your communication with our AI
+              coach.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

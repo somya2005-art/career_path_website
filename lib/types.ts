@@ -8,7 +8,23 @@ import {
   VolunteerWork,
 } from "@prisma/client";
 
-// Export these types directly from Prisma
+// --- THIS IS THE JSEARCH DATA STRUCTURE ---
+// We've moved it here to be sharable
+export interface JobListing {
+  job_id: string;
+  employer_name: string;
+  job_title: string;
+  job_country: string | null;
+  job_city: string | null;
+  job_apply_link: string | null;
+  job_description: string;
+  job_employment_type: string | null;
+  job_is_remote: boolean;
+  job_posted_at: string | null;
+  job_posted_at_timestamp: number | null;
+}
+
+// Re-export these types from Prisma
 export type {
   WorkExperience,
   Education,
@@ -19,6 +35,8 @@ export type {
 
 // This is the main state for our Resume Context
 export type ResumeState = {
+  // We need to add all fields from the Prisma model
+  userId: string;
   fullName: string;
   email: string;
   phone: string;
@@ -31,6 +49,12 @@ export type ResumeState = {
   projects: Project[];
   certifications: Certification[];
   volunteerWork: VolunteerWork[];
+
+  // --- THIS IS THE FIX ---
+  // Add the new cache fields
+  cachedJobFeed: JobListing[];
+  feedUpdatedAt: Date | null;
+  // --- END OF FIX ---
 };
 
 // This defines the actions we can dispatch to our reducer

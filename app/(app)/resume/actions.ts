@@ -4,11 +4,13 @@
 
 import { ResumeState } from "@/lib/types";
 import prisma from "@/lib/prisma"; // Import our global prisma instance
-import { syncUser } from "@/lib/user"; // --- IMPORT THE NEW SHARED FUNCTION ---
+import { syncUser } from "@/lib/user"; // Import our shared user function
 
-// --- We have REMOVED the old syncUser function from this file ---
-
+// This is the shape of the data we'll return
+// It's the same as our Prisma schema, but we ensure
+// optional fields are null if not present.
 const defaultResumeData: ResumeState = {
+  userId: "", // Will be filled
   fullName: "",
   email: "",
   phone: "",
@@ -21,14 +23,27 @@ const defaultResumeData: ResumeState = {
   projects: [],
   certifications: [],
   volunteerWork: [],
+  cachedJobFeed: [], // <-- ADDED
+  feedUpdatedAt: null, // <-- ADDED
 };
 
 // Server Action to get the user's resume data
 export async function getResumeData(): Promise<ResumeState> {
+  let userId: string;
   try {
     const user = await syncUser(); // <-- CALL THE SHARED HELPER
-    const userId = user.id;
+    userId = user.id;
+  } catch (error) {
+    console.error("Error in getResumeData (auth):", error);
+    if ((error as Error).message === "Not authenticated") {
+      throw new Error("You must be logged in to get resume data.");
+    }
+    // If auth fails for some other reason, return a default state
+    // with a (non-existent) userId to prevent further errors
+    return { ...defaultResumeData, userId: "error-user-id" };
+  }
 
+  try {
     const resume = await prisma.resume.findUnique({
       where: { userId },
       include: {
@@ -37,13 +52,16 @@ export async function getResumeData(): Promise<ResumeState> {
         projects: true,
         certifications: true,
         volunteerWork: true,
+        // We don't need to "include" cachedJobFeed as it's a JSON field
       },
     });
 
     if (resume) {
+      // If resume exists, format it to match our ResumeState
       return {
         ...defaultResumeData,
         ...resume,
+        userId: resume.userId,
         fullName: resume.fullName || "",
         email: resume.email || "",
         phone: resume.phone || "",
@@ -55,16 +73,19 @@ export async function getResumeData(): Promise<ResumeState> {
         projects: resume.projects || [],
         certifications: resume.certifications || [],
         volunteerWork: resume.volunteerWork || [],
+        // --- THIS IS THE FIX ---
+        // Ensure the new fields are explicitly returned
+        cachedJobFeed: (resume.cachedJobFeed as any[]) || [],
+        feedUpdatedAt: resume.feedUpdatedAt || null,
+        // --- END OF FIX ---
       };
     }
 
-    return defaultResumeData;
+    // If no resume, return the default empty state with the correct userId
+    return { ...defaultResumeData, userId: userId };
   } catch (error) {
-    console.error("Error in getResumeData:", error);
-    if ((error as Error).message === "Not authenticated") {
-      throw new Error("You must be logged in to get resume data.");
-    }
-    return defaultResumeData;
+    console.error("Error in getResumeData (fetch):", error);
+    return { ...defaultResumeData, userId: userId };
   }
 }
 
@@ -82,6 +103,10 @@ export async function saveResumeData(
       projects,
       certifications,
       volunteerWork,
+      // We destructure the cache fields so they DON'T get saved
+      // by this function, as only the dashboard should update them
+      cachedJobFeed,
+      feedUpdatedAt,
       ...resumeDetails
     } = resumeState;
 
@@ -92,6 +117,7 @@ export async function saveResumeData(
 
     await prisma.resume.upsert({
       where: { userId },
+      // Create a new resume if one doesn't exist
       create: {
         ...resumeDetails,
         userId,
@@ -101,11 +127,13 @@ export async function saveResumeData(
         certifications: { create: certifications.map(createData) },
         volunteerWork: { create: volunteerWork.map(createData) },
       },
+      // Update the existing resume
       update: {
         ...resumeDetails,
+        // For updates, we delete old entries and create new ones
         workExperience: {
-          deleteMany: {},
-          create: workExperience.map(createData),
+          deleteMany: {}, // Delete all old
+          create: workExperience.map(createData), // Create new
         },
         educations: {
           deleteMany: {},

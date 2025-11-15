@@ -38,6 +38,9 @@ model Resume {
   // Skills (simple array of strings)
   skills    String[]
 
+  cachedJobFeed Json?     @default("[]")
+  feedUpdatedAt DateTime?
+
   // Relations to other models
   workExperience WorkExperience[] 
   educations     Education[]      

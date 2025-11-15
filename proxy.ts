@@ -25,7 +25,20 @@ export default clerkMiddleware(async (auth, req) => {
   // --- FIX 1: Redirect logged-in users away from public routes ---
   // If the user is logged IN and is on a public route
   if (userId && isPublicRoute(req)) {
+    const pathname = new URL(req.url).pathname;
+
+    // If they're on the landing page, redirect to dashboard
+    if (pathname === "/") {
+      const dashboardUrl = new URL("/dashboard", req.url);
+      return NextResponse.redirect(dashboardUrl);
+    }
+
+    // If it's the about page (or any other public page), allow access
+    return NextResponse.next();
+  }
+  if (userId && isPublicRoute(req)) {
     // Redirect them to their dashboard
+
     const dashboardUrl = new URL("/dashboard", req.url);
     return NextResponse.redirect(dashboardUrl);
   }
