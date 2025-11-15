@@ -156,7 +156,7 @@ export default function DashboardPage() {
                   href={a.href}
                   className="p-3 rounded-lg border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition flex flex-col gap-2"
                 >
-                  <div className="w-10 h-5 rounded-lg bg-gradient-to-br from-purple-600/20 to-transparent flex items-center justify-center text-purple-300">
+                  <div className="w-10 h-5 rounded-lg bg-linear-to-br from-purple-600/20 to-transparent flex items-center justify-center text-purple-300">
                     {a.icon}
                   </div>
                   <div>
