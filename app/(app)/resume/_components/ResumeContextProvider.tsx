@@ -16,7 +16,10 @@ import {
 import cuid from "cuid";
 
 // This is the default, empty state for a new resume
+// --- THIS IS THE FIX ---
+// Added userId, cachedJobFeed, and feedUpdatedAt to match the new ResumeState type
 const initialResumeState: ResumeState = {
+  userId: "", // Default empty string
   fullName: "",
   email: "",
   phone: "",
@@ -29,7 +32,10 @@ const initialResumeState: ResumeState = {
   projects: [],
   certifications: [],
   volunteerWork: [],
+  cachedJobFeed: [], // Default empty array
+  feedUpdatedAt: null, // Default null
 };
+// --- END OF FIX ---
 
 // --- The Reducer ---
 // This function handles all state updates
@@ -47,6 +53,7 @@ function resumeReducer(state: ResumeState, action: ResumeAction): ResumeState {
         projects: action.payload.projects || [],
         certifications: action.payload.certifications || [],
         volunteerWork: action.payload.volunteerWork || [],
+        cachedJobFeed: action.payload.cachedJobFeed || [],
       };
 
     case "UPDATE_PERSONAL_INFO":
@@ -166,7 +173,6 @@ function resumeReducer(state: ResumeState, action: ResumeAction): ResumeState {
 // These are used by the forms to add new, empty items to the list
 // We use CUID to create a unique temporary ID for React's `key` prop
 
-// --- THIS IS THE FIX for the uneditable fields bug ---
 // All values are now "" (empty string) instead of placeholder text
 export const createBlankWorkExperience = (): WorkExperience => ({
   id: cuid(),
@@ -225,7 +231,6 @@ export const createBlankVolunteerWork = (): VolunteerWork => ({
   createdAt: new Date(),
   updatedAt: new Date(),
 });
-// --- END OF FIX ---
 
 // --- React Context Setup ---
 type ResumeContextType = {
