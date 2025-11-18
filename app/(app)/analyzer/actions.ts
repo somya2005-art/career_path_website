@@ -84,7 +84,7 @@ export async function analyzeResumeWithJD(jobDescription: string): Promise<{
           )} \n\nHere is the job description: ${jobDescription}`,
         },
       ],
-      model: "llama3-8b-8192", // Fast and efficient
+      model: "openai/gpt-oss-120b", // Fast and efficient
       temperature: 0.2, // Low temp for factual analysis
       // --- THIS IS THE FIX ---
       // We cast this object to 'any' to bypass the TypeScript error

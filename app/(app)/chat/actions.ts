@@ -23,7 +23,7 @@ RULES:
 - Always be polite, encouraging, and professional.
 - Keep your answers concise and actionable (use bullet points).
 - If the user asks a question unrelated to careers, gently guide them back to the topic.
-- You are powered by Groq and Llama 3, but you must refer to yourself as "CareerBot".
+- You are powered by Groq and OpenAI OSS GPT, but you must refer to yourself as "CareerBot".
 `;
 
 export type ClientChatMessage = {
