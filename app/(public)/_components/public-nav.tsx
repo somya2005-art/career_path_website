@@ -5,7 +5,8 @@ import {
   NavBody,
   NavItems,
   MobileNav,
-  NavbarButton, // We still use this for the mobile menu buttons
+  NavbarLogo,
+  NavbarButton,
   MobileNavHeader,
   MobileNavToggle,
   MobileNavMenu,
@@ -16,17 +17,17 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
-// Minimal text logo component
+// --- LOGO COMPONENT ---
 const CareerPathLogo = () => {
   return (
     <Link
       href="/"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-white"
+      className="relative flex items-center py-1 text-sm font-normal text-white z-10"
     >
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="font-['var(--font-outfit)'] text-3xl tracking-wider whitespace-pre text-white [text-shadow:_0_0_12px_rgba(255,255,255,0.5)]"
+        className="font-logo text-3xl tracking-wider whitespace-pre text-white [text-shadow:_0_0_12px_rgba(255,255,255,0.5)]"
       >
         Career Path
       </motion.span>
@@ -38,6 +39,7 @@ export function PublicNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isSignedIn } = useUser();
 
+  // No nav items needed anymore since About is moved
   const navItems: { name: string; link: string }[] = [];
 
   return (
@@ -47,17 +49,25 @@ export function PublicNav() {
 
         <NavItems items={navItems} />
 
-        <div className="flex items-center gap-3">
+        <div className="relative z-20 flex items-center gap-3">
+          {/* --- About Button (Glassmorphic) --- */}
+          <Link
+            href="/about"
+            className={cn(
+              "inline-flex items-center justify-center rounded-xl text-sm font-medium h-10 px-4 py-2",
+              "backdrop-blur-md border border-white/20 bg-white/10",
+              "text-white shadow-[0_0_12px_rgba(255,255,255,0.35)] hover:bg-white/20 transition"
+            )}
+          >
+            About
+          </Link>
+
           {isSignedIn ? (
-            // --- SIGNED IN (Desktop) ---
             <>
-              {/* --- FIX: We use a Link styled as a button --- */}
               <Link
                 href="/dashboard"
                 className={cn(
-                  // We manually add the button styles
                   "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2",
-                  // Your custom styles
                   "text-white hover:bg-white/10 hover:text-white"
                 )}
               >
@@ -65,13 +75,11 @@ export function PublicNav() {
               </Link>
 
               <div>
-                <UserButton afterSignOutUrl="/" />
+                <UserButton />
               </div>
             </>
           ) : (
-            // --- SIGNED OUT (Desktop) ---
             <>
-              {/* --- FIX: We use a Link styled as a button --- */}
               <Link
                 href="/sign-in"
                 className={cn(
@@ -82,7 +90,6 @@ export function PublicNav() {
                 Sign In
               </Link>
 
-              {/* --- FIX: We use a Link styled as a button --- */}
               <Link
                 href="/sign-up"
                 className={cn(
@@ -111,22 +118,20 @@ export function PublicNav() {
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
         >
-          {navItems.map((item, idx) => (
-            <a
-              key={`mobile-link-${idx}`}
-              href={item.link}
+          {/* Mobile About Button */}
+          <Link href="/about">
+            <NavbarButton
               onClick={() => setIsMobileMenuOpen(false)}
-              className="relative text-neutral-600 dark:text-neutral-300"
+              variant="secondary"
+              className="w-full"
             >
-              <span className="block">{item.name}</span>
-            </a>
-          ))}
+              About
+            </NavbarButton>
+          </Link>
 
           <div className="flex w-full flex-col gap-4 pt-4">
             {isSignedIn ? (
-              // --- SIGNED IN (Mobile) ---
               <>
-                {/* We can keep NavbarButton here because <Link> is the parent */}
                 <Link href="/dashboard">
                   <NavbarButton
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -142,9 +147,7 @@ export function PublicNav() {
                 </div>
               </>
             ) : (
-              // --- SIGNED OUT (Mobile) ---
               <>
-                {/* We can keep NavbarButton here because <Link> is the parent */}
                 <Link href="/sign-in">
                   <NavbarButton
                     onClick={() => setIsMobileMenuOpen(false)}
