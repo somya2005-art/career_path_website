@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react"; // --- FIX: Import useRef ---
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -8,80 +8,135 @@ import { Loader2, Terminal } from "lucide-react";
 import { analyzeResumeWithJD, AnalysisResult } from "./actions";
 import { AnalysisResultDisplay } from "./_components/AnalysisResultDisplay";
 
-// This is the main page component for the Analyzer
 export default function AnalyzerPage() {
   const [jobDescription, setJobDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
 
-  // --- FIX: Create a ref for the results div ---
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsLoading(true);
     setError(null);
     setAnalysis(null);
 
-    const result = await analyzeResumeWithJD(jobDescription);
+    try {
+      const result = await analyzeResumeWithJD(jobDescription);
 
-    if (result.success) {
-      setAnalysis(result.analysis!);
-      // --- FIX: Auto-scroll on success ---
-      // We use a short timeout to make sure React has rendered the
-      // results div before we try to scroll to it.
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-    } else {
-      setError(result.error!);
+      if (result.success) {
+        setAnalysis(result.analysis!);
+        setTimeout(
+          () => resultsRef.current?.scrollIntoView({ behavior: "smooth" }),
+          100
+        );
+      } else {
+        setError(result.error ?? "Unknown error");
+      }
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
+  const handleClear = () => {
+    setJobDescription("");
+    setError(null);
+    setAnalysis(null);
+  };
+
+  const charCount = jobDescription.length;
+  const wordCount =
+    jobDescription.trim() === ""
+      ? 0
+      : jobDescription.trim().split(/\s+/).length;
+
   return (
-    // We add padding to the page, which we removed from the layout
-    <div className="max-w-4xl mx-auto p-4 md:p-8">
-      {/* --- FIX: Styled the heading --- */}
-      <h1 className="text-4xl font-bold mb-4 text-white [text-shadow:_0_0_12px_rgba(255,255,255,0.5)]">
-        Resume Analyzer
-      </h1>
-      <p className="text-neutral-400 mb-6">
-        Paste a job description below to see how well your saved resume matches
-        the role.
-      </p>
+    <div className="max-w-7xl mx-auto p-4 md:p-8">
+      {/* grid: left control column + right results */}
+      <div className="grid grid-cols-1 md:grid-cols-[520px_1fr] gap-10 items-start">
+        {/* LEFT COLUMN (sticky at top-16; higher z so it stays visually above right content) */}
+        <aside className="md:sticky md:top-16 self-start z-20">
+          <div className="bg-gradient-to-br from-white/3 to-white/6 dark:from-black/30 dark:to-black/25 rounded-2xl border border-white/6 p-5 shadow-md backdrop-blur-sm">
+            {/* Page heading & subheading (moved here) */}
+            <h1 className="text-3xl md:text-4xl font-bold mb-1 text-white [text-shadow:_0_0_12px_rgba(255,255,255,0.5)]">
+              Resume Analyzer
+            </h1>
+            <p className="text-neutral-400 mb-6 text-sm md:text-base">
+              Paste a job description and analyze how well your saved resume
+              matches the role.
+            </p>
 
-      {/* --- The Form --- */}
-      <form onSubmit={handleSubmit}>
-        <Textarea
-          placeholder="Paste the full job description here..."
-          rows={15}
-          className="mb-4"
-          value={jobDescription}
-          onChange={(e) => setJobDescription(e.target.value)}
-          disabled={isLoading}
-        />
-        <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
-          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {isLoading ? "Analyzing..." : "Analyze Resume"}
-        </Button>
-      </form>
+            {/* Buttons */}
+            <div className="flex items-center gap-3 mb-4">
+              <Button
+                onClick={handleSubmit}
+                disabled={isLoading || jobDescription.trim().length === 0}
+                className="inline-flex items-center px-4 py-2"
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Analyze
+              </Button>
 
-      {/* --- Error Display --- */}
-      {error && (
-        <Alert variant="destructive" className="mt-6">
-          <Terminal className="h-4 w-4" />
-          <AlertTitle>Analysis Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+              <Button
+                variant="outline"
+                onClick={handleClear}
+                disabled={isLoading}
+                className="inline-flex px-3 py-2"
+              >
+                Clear
+              </Button>
+            </div>
 
-      {/* --- Result Display --- */}
-      {/* --- FIX: Attach the ref here --- */}
-      <div className="mt-8" ref={resultsRef}>
-        {analysis && <AnalysisResultDisplay result={analysis} />}
+            {/* Textarea */}
+            <Textarea
+              placeholder="Paste the full job description here..."
+              rows={14}
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              disabled={isLoading}
+              className="min-h-[18rem] max-h-[60vh] overflow-auto resize-none mb-3"
+            />
+
+            {/* Footer: word/char counts */}
+            <div className="flex items-center justify-between text-sm text-neutral-400">
+              <div className="flex items-center gap-4">
+                <span>{wordCount} words</span>
+                <span>{charCount} characters</span>
+              </div>
+
+              <span className="text-xs">
+                Tip: include responsibilities & skills
+              </span>
+            </div>
+          </div>
+        </aside>
+
+        {/* RIGHT COLUMN – RESULTS ONLY
+            Give right column a matching top padding so content aligns with left.
+            Set lower z so it cannot visually overlap the left sticky panel.
+        */}
+        <main className="pt-0 md:pt-16 relative z-0">
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <Terminal className="h-4 w-4" />
+              <AlertTitle>Analysis Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <div ref={resultsRef}>
+            {analysis ? (
+              <AnalysisResultDisplay result={analysis} />
+            ) : (
+              <div className="rounded-xl border border-white/6 bg-white/3 p-6 text-neutral-400">
+                No results yet — run an analysis to see results here.
+              </div>
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );
