@@ -2,27 +2,23 @@
 
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { useResumeContext } from "../ResumeContextProvider";
+import {
+  useResumeContext,
+  createBlankEducation, // --- IMPORT THIS HELPER ---
+} from "../ResumeContextProvider";
 import { EducationItem } from "./EducationItem";
-import cuid from "cuid";
+
+// We no longer need to import cuid here, because the helper handles it
 
 export function EducationForm() {
   const { state, dispatch } = useResumeContext();
 
   const handleAddEducation = () => {
-    // Create a new, blank education object
-    const newEducation = {
-      id: cuid(), // Generate a unique client-side ID
-      school: "",
-      degree: "",
-      fieldOfStudy: "",
-      startDate: null,
-      endDate: null,
-      description: "",
-    };
-
-    // Dispatch the action to add it to the state
-    dispatch({ type: "ADD_EDUCATION", payload: newEducation });
+    // --- THIS IS THE FIX ---
+    // Instead of creating the object manually here, we use the helper
+    // from ResumeContextProvider. This ensures all fields (like createdAt)
+    // are present, satisfying TypeScript.
+    dispatch({ type: "ADD_EDUCATION", payload: createBlankEducation() });
   };
 
   return (
