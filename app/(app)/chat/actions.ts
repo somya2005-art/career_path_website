@@ -1,16 +1,14 @@
 "use server";
 
 import { Groq } from "groq-sdk";
-import { syncUser } from "@/lib/user"; // Import our shared user function
-import prisma from "@/lib/prisma"; // Import our shared prisma client
+import { syncUser } from "@/lib/user";
+import prisma from "@/lib/prisma";
 import { ChatMessage } from "@prisma/client";
 
-// Get the API key from environment variables
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-// This is the "persona" for our Career Bot
 const systemPrompt = `
 You are "CareerBot," a friendly, professional, and highly knowledgeable career coach.
 Your goal is to help users with all aspects of their career development.
@@ -28,7 +26,6 @@ RULES:
 - You are powered by Groq and Llama 3, but you must refer to yourself as "CareerBot".
 `;
 
-// This is the type we'll use for messages in the React component
 export type ClientChatMessage = {
   id: string;
   role: "user" | "model";
@@ -43,10 +40,9 @@ export async function getChatHistory(): Promise<ClientChatMessage[]> {
     const history = await prisma.chatMessage.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "asc" },
-      take: 50, // Get the last 50 messages
+      take: 50,
     });
 
-    // We map to the ClientChatMessage type to be safe
     return history.map((msg) => ({
       id: msg.id,
       role: msg.role as "user" | "model",
@@ -54,7 +50,7 @@ export async function getChatHistory(): Promise<ClientChatMessage[]> {
     }));
   } catch (error) {
     console.error("Error fetching chat history:", error);
-    return []; // Return empty history on error
+    return [];
   }
 }
 
@@ -64,7 +60,6 @@ export async function sendNewMessage(
 ): Promise<ClientChatMessage | { error: string }> {
   let userId: string;
 
-  // 1. Sync user and save their new message
   try {
     const user = await syncUser();
     userId = user.id;
@@ -81,31 +76,33 @@ export async function sendNewMessage(
     return { error: "Failed to save your message." };
   }
 
-  // 2. Get the full chat history to send to Groq
   const history = await prisma.chatMessage.findMany({
     where: { userId },
     orderBy: { createdAt: "asc" },
     take: 50,
   });
 
-  // Format messages for the Groq API (role: 'user' or 'assistant')
   const groqMessages = history.map((msg) => ({
     role: msg.role === "model" ? "assistant" : "user",
     content: msg.content,
   }));
 
-  // 3. Call Groq API
   try {
     const chatCompletion = await groq.chat.completions.create({
+      // --- THIS IS THE FIX ---
+      // We cast the messages array to 'any' to stop TypeScript
+      // from complaining about the specific 'role' string types.
       messages: [
         {
           role: "system",
           content: systemPrompt,
         },
         ...groqMessages,
-      ],
-      model: "openai/gpt-oss-120b",
-      temperature: 0.7, // A bit more creative than the analyzer
+      ] as any,
+      // --- END OF FIX ---
+
+      model: "openai/gpt-oss-120b", // Using the standard efficient model
+      temperature: 0.7,
     });
 
     const aiResponseContent = chatCompletion.choices[0]?.message?.content;
@@ -114,7 +111,6 @@ export async function sendNewMessage(
       return { error: "The AI failed to provide a response." };
     }
 
-    // 4. Save the AI's response to our database
     const aiMessage = await prisma.chatMessage.create({
       data: {
         userId,
@@ -123,7 +119,6 @@ export async function sendNewMessage(
       },
     });
 
-    // 5. Return the new AI message to the client
     return {
       id: aiMessage.id,
       role: "model",
