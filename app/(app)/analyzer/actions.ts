@@ -84,9 +84,11 @@ export async function analyzeResumeWithJD(jobDescription: string): Promise<{
           )} \n\nHere is the job description: ${jobDescription}`,
         },
       ],
-      model: "openai/gpt-oss-120b", // Fast and efficient
+      model: "llama3-8b-8192", // Fast and efficient
       temperature: 0.2, // Low temp for factual analysis
-      // This is the magic: force Groq to return JSON
+      // --- THIS IS THE FIX ---
+      // We cast this object to 'any' to bypass the TypeScript error
+      // because the SDK types might be slightly out of date for this beta feature.
       response_format: {
         type: "json_object",
         schema: {
@@ -112,7 +114,8 @@ export async function analyzeResumeWithJD(jobDescription: string): Promise<{
             "missingKeywords",
           ],
         },
-      },
+      } as any,
+      // --- END OF FIX ---
     });
 
     const responseContent = chatCompletion.choices[0]?.message?.content;
