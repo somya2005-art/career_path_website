@@ -6,7 +6,7 @@ This is a full-stack web application built with Next.js, TypeScript, and a moder
 
 ## Live Demo
 
-**[Click here to see the live deployment on Vercel!](https://www.google.com/search?q=https://career-path-mk.vercel.app/)**
+**[Click here to see the live deployment on Vercel!](https://career-path-mk.vercel.app/)**
 
 ![Landing Page](image.png)
 
